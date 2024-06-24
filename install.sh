@@ -148,18 +148,18 @@ for item in "$HOME/.zsh" "$HOME/.zshrc" "$HOME/.config/lsd"; do
         case $item in
             $HOME/.zsh)
                 printf "${note} - A ${green}.zsh${end} directory is available... Backing it up\n" 
-                cp -r "$item" "$HOME/.zsh-back" 2>&1 | tee -a "$log"
+                mv "$item" "$HOME/.zsh"-${USER}
                 ;;
             $HOME/.config/lsd)
                 printf "${note} - A ${yellow}~/.config/lsd${end} directory is available... Backing it up\n" 
-                cp -r "$item" "$HOME/.config/lsd-back" 2>&1 | tee -a "$log"
+                mv "$item" "$HOME/.config/lsd"-${USEr}
                 ;;
         esac
     elif [[ -f $item ]]; then
         case $item in
             $HOME/.zshrc)
                 printf "${note} - A ${cyan}.zshrc${end} file is available... Backing it up\n" 
-                cp "$item" "$HOME/.zshrc-back-main" 2>&1 | tee -a "$log"
+                mv "$item" "$HOME/.zshrc"-${USER}
                 ;;
         esac
     fi
