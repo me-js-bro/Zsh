@@ -1,7 +1,15 @@
 ## Zsh Installation Script
 
 ### Installation
-just run the bellow command, and it will automaticly install `zsh`, `oh-my-zsh`, `zsh-syntaxhighlightine`, `zsh-autosuggestions` and other necessary packages. Also you will get some custom funstions and alias.
+just run the bellow command, and it will automaticly install `zsh`, `oh-my-zsh`, `zsh-syntaxhighlightine`, `zsh-autosuggestions` and other necessary packages. Also you will get some custom funstions and alias. <br>
+
+Before you run the command, make sure to install `wget`. You can use these commands based on your package manager.
+```bash
+sudo apt install wget
+sudo dnf install wget2
+sudo zypper install wget
+sudo pacman -S wget
+```
 
 ### Install Command
 ```bash
