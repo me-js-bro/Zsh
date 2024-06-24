@@ -167,7 +167,7 @@ sleep 1
 
 printf "${action} - Copying configs\n"
 sleep 1
-cp -r "$present_dir/.zsh" "$HOME/"
+cp -r .zsh ~/
 ln -sf "$HOME/.zsh/.zshrc" "$HOME/.zshrc"
 
 printf "${done} - Installation and configuration of zsh and oh-my-zsh finished!\n"
