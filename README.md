@@ -12,8 +12,11 @@ sudo pacman -S wget
 ```
 
 ### Install Command
-```bash
-bash -c "$(wget -q https://raw.githubusercontent.com/me-js-bro/Zsh/main/install.sh -O -)"
+```
+git clone --depth=1 https://github.com/me-js-bro/Zsh.git
+cd Zsh
+chmod +x install.sh
+./install.sh
 ```
 Just run this command and you are good to go.
 
