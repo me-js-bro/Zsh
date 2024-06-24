@@ -98,15 +98,15 @@ check_distro && sleep 1
 # package installation function
 fn_install() {
 
-    if $(command -v pacman) &> /dev/null; then  # Arch Linux
+    if command -v pacman &> /dev/null; then  # Arch Linux
         sudo pacman -S --noconfirm "$1"
-    elif $(command -v dnf) &> /dev/null; then  # Fedora
+    elif command -v dnf &> /dev/null; then  # Fedora
         sudo dnf install -y "$1"
-    elif $(command -v zypper) &> /dev/null; then  # openSUSE
+    elif command -v zypper &> /dev/null; then  # openSUSE
         sudo zypper in "$1"
-    elif $(command -v apt) &> /dev/null; then	# ubuntu or ubuntu based
+    elif command -v apt &> /dev/null; then	# ubuntu or ubuntu based
     	sudo apt install "$1"
-    elif $(command -v xbps-install) &> /dev/null ; then # void
+    elif command -v xbps-install &> /dev/null ; then # void
         sudo xbps-install -y "$1"
     else
         echo "Unsupported distribution."
