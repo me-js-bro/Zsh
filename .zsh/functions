@@ -1,0 +1,211 @@
+# ~/.zsh/functions
+
+# Path to the sound file
+update_sound="$HOME/.bash/sounds/update.wav"
+removed_sound="$HOME/.bash/sounds/removed.wav"
+
+# functions for sound notification
+update_notify() {
+    notify-send "$1"
+    paplay "$update_sound"
+}
+
+removed_notify() {
+    notify-send "$1"
+    paplay "$update_sound"
+}
+
+# extract files
+ex(){
+  if [ -f $1 ] ; then
+    case $1 in
+      *.tar.bz2)   tar xjf $1   ;;
+      *.tar.gz)    tar xzf $1   ;;
+      *.bz2)       bunzip2 $1   ;;
+      *.rar)       unrar x $1   ;;
+      *.gz)        gunzip $1    ;;
+      *.tar)       tar xf $1    ;;
+      *.tbz2)      tar xjf $1   ;;
+      *.tgz)       tar xzf $1   ;;
+      *.zip)       unzip $1     ;;  # install unzip first
+      *.Z)         uncompress $1;;
+      *.7z)        7z x $1      ;;
+      *.deb)       ar x $1      ;;
+      *.tar.xz)    tar xf $1    ;;
+      *.tar.zst)   tar xf $1    ;;
+      *)           printf "'$1' cannot be extracted via ex()" ;;
+    esac
+  else
+    printf "'$1' is not a valid file"
+  fi
+}
+
+# remove files and directories
+fn_removal() {
+    local dir_or_file="$1"
+
+    if [ -f "$dir_or_file" ]; then
+        rm "$dir_or_file" -v
+    elif [ -d "$dir_or_file" ]; then
+        rm -r "$dir_or_file" -v
+    else
+        printf "\e[1;31m'$dir_or_file' does not exist or is neither a regular file nor a directory.\e[0m\n"
+    fi
+}
+
+# check updates
+fn_check_updates() {
+    if [ -n "$(command -v pacman)" ]; then  # Arch Linux
+        aur=$(command -v yay || command -v paru) # find the aur helper
+        case "$1" in
+            main) checkupdates | wc -l
+                ;;
+            aur) "$aur" -Qua | wc -l
+                ;;
+        esac
+
+    elif [ -n "$(command -v dnf)" ]; then  # Fedora
+        dnf check-update -q | wc -l
+    elif [ -n "$(command -v zypper)" ]; then  # openSUSE
+        zypper lu --best-effort | grep -c 'v |'
+    else
+        printf "Unsupported distribution."
+        return 1
+    fi
+}
+
+# package updates
+fn_update() {
+    if [ -n "$(command -v pacman)" ]; then  # Arch Linux
+        aur=$(command -v yay || command -v paru) # find the aur helper
+        case "$1" in
+            main) sudo pacman -Syyu
+                ;;
+            aur) $aur -Syyu
+                ;;
+        esac
+
+    elif [ -n "$(command -v dnf)" ]; then  # Fedora
+        sudo dnf update -y && sudo dnf upgrade -y
+    elif [ -n "$(command -v zypper)" ]; then  # openSUSE
+        sudo zypper up -y && sudo zypper ref
+    else
+        printf "Unsupported distribution."
+        return 1
+    fi
+
+    fn_check_updates >> /dev/null
+    upd=$?
+
+    if [[ "$upd" -eq 0 ]]; then
+        update_notify "  Packages are up to date now"
+    elif [[ "$upd" -gt 0 ]]; then
+        update_notify "Some packages may have skipped."
+    else
+        update_notify "Could not update your packages."
+    fi
+}
+
+
+# Install software
+fn_install() {
+    if [ -n "$(command -v pacman)" ]; then  # Arch Linux
+        aur=$(command -v yay || command -v paru) # find the aur helper
+        pkg_manager=$(command -v packan || command -v yay || command -v paru)
+
+        case "$1" in
+            main) 
+                shift
+                sudo pacman -S --noconfirm "$@"
+                ;;
+            aur)
+                shift
+                $aur -S --noconfirm "$@"
+                ;;
+            *) printf "Sorry, could not install \e[1;31m"$@"\e[1;0m...\n"
+        esac
+
+        # check if the package manager is installed
+        if sudo "$pkg_manager" -Qs "$@" &>> /dev/null; then
+            update_notify "$@ installed successfully.."
+        fi
+
+    elif [ -n "$(command -v dnf)" ]; then  # Fedora
+
+        sudo dnf install -y "$@"
+        # check if the package is installed
+        if sudo dnf list installed "$@" &>> /dev/null; then
+            update_notify "$@ installed successfully.."
+        fi
+
+    elif [ -n "$(command -v zypper)" ]; then  # openSUSE
+
+        sudo zypper in -y "$@"
+        # check if the package is installed
+        if sudo zypper se -i "$@" &>> /dev/null; then
+            update_notify "$@ installed successfully.."
+        fi
+
+    elif [ -n "$(command -v apt)" ]; then	# ubuntu or ubuntu based
+
+    	sudo apt install "$@" -y
+        update_notify "$@ installed successfully.."
+
+    else
+
+        printf "Unsupported distribution."
+        return 1
+    fi
+}
+
+# package uninstall
+fn_uninstall() {
+    if [ -n "$(command -v pacman)" ]; then  # Arch Linux
+        aur=$(command -v yay || command -v paru) # find the aur helper
+        pkg_manager=$(command -v packan || command -v yay || command -v paru)
+
+        case "$1" in
+            main)
+                shift
+                 sudo pacman -Rns "$@"
+                ;;
+            aur)
+                shift 
+                $aur -Rns "$@"
+                ;;
+        esac
+
+        if sudo "$pkg_manager" -Qs "$@" &> /dev/null; then
+            echo "Package was not removed"
+        else
+            removed_notify "$@ removed successfully"
+        fi
+
+    elif [ -n "$(command -v dnf)" ]; then  # Fedora
+
+        sudo dnf remove "$@"
+        if sudo dnf list installed "$@" &> /dev/null; then
+            echo "Package was not removed"
+        else
+            removed_notify "$@ removed successfully"
+        fi
+
+    elif [ -n "$(command -v zypper)" ]; then  # openSUSE
+
+        sudo zypper rm "$@"
+        if sudo zypper se -i "$@" &> /dev/null; then
+            echo "Package was not removed"
+        else
+            removed_notify "$@ removed successfully"
+        fi
+
+    elif [ -n "$(command -v apt)" ]; then	# ubunt or related
+
+    	sudo apt remove "$@"
+        removed_notify "$@ removed successfully"
+    else
+        printf "Unsupported distribution."
+        return 1
+    fi
+    sleep 1
+}
