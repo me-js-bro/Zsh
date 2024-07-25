@@ -36,5 +36,4 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# neofetch
-fastfetch
+neofetch || fastfetch
