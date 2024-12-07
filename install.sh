@@ -60,9 +60,17 @@ fn_install() {
     elif [ -n "$(command -v apt)" ]; then	# debian
         sudo apt install -y "$pkg" 2>&1 | tee -a "$log"
     else
-        echo "Unsupported distribution."
-        return 1
-    fi
+
+        if [[ "$(uname)" == "Darwin" ]]; then
+            echo "Running on macOS..."
+            if [ -n "$(command -v brew)" ]; then
+                brew install "$pkg" 2>&1 | tee -a "$log"
+            elif [ -z "$(command -v brew)" ]; then
+                echo "Homebrew is not installed. Install it from https://brew.sh/ before running this script."
+                exit 1
+            fi
+        fi
+   fi
 }
 
 # install the packages
@@ -87,11 +95,13 @@ if command -v zypper &> /dev/null; then
     fi
 
 elif command -v pacman &> /dev/null; then  # Arch Linux
-        sudo pacman -S --noconfirm thefuck 2>&1 | tee -a "$log"
-
+    sudo pacman -S --noconfirm thefuck 2>&1 | tee -a "$log"
 elif command -v dnf &> /dev/null; then  # Fedora
-        sudo dnf install -y thefuck 2>&1 | tee -a "$log"
+    sudo dnf install -y thefuck 2>&1 | tee -a "$log"
+elif command -v brew &> /dev/null; then
+    brew install thefuck 2>&1 | tee -a "$log"
 fi
+
 
 printf "${attention} - Installing bash files...\n \n \n" && sleep 0.5
 

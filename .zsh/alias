@@ -20,7 +20,7 @@ alias .='cd /'  # go to root dir
 alias cd='z'
 
 # other
-alias src='source ~/.bash/.bashrc' #source .bashrc
+alias src='source ~/.zsh/.zshrc' #source .bashrc
 alias clr='clear'   #clear
 alias cls='clear'
 
