@@ -1,51 +1,5 @@
 # ~/.bash/functions
 
-# Path to the sound file
-update_sound="$HOME/.zsh/sounds/update.wav"
-removed_sound="$HOME/.zsh/sounds/removed.wav"
-icon_dir="$HOME/.zsh/icons"
-
-# functions for sound notification
-install_notify() {
-    notify-send "$1" "$2" -i "$3"
-    paplay "$update_sound"
-}
-
-removed_notify() {
-    notify-send "$1" "$2" -i "$3"
-    paplay "$update_sound"
-}
-
-update_notify()  {
-    notify-send -i "$1" "$2" "$3"
-    paplay "$update_sound"
-}
-
-# extract files
-ex () {
-  if [ -f $1 ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;  # install unzip first
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *.deb)       ar x $1      ;;
-      *.tar.xz)    tar xf $1    ;;
-      *.tar.zst)   tar xf $1    ;;
-      *)           printf "'$1' cannot be extracted via ex()" ;;
-    esac
-  else
-    printf "'$1' is not a valid file"
-  fi
-}
-
 # remove files and directories
 fn_removal() {
     local dir_or_file="$1"
@@ -53,7 +7,7 @@ fn_removal() {
     if [ -f "$dir_or_file" ]; then
         rm "$dir_or_file" -v
     elif [ -d "$dir_or_file" ]; then
-        rm -r "$dir_or_file" -v
+        rm -rf "$dir_or_file" -v
     else
         printf "\e[1;31m'$dir_or_file' does not exist or is neither a regular file nor a directory.\e[0m\n"
     fi
@@ -69,19 +23,23 @@ fn_check_updates() {
         ofc=$(checkupdates | wc -l)
 
         # Calculate total available updates
-        upddates=$(( ofc + aur ))
-        printf "Main: $ofc\n"
-        printf "Aur: $aur\n"
-        printf "Total: $upddates\n"
+        upd=$(( ofc + aur ))
+        printf "[ UPDATES ]\n:: You have \e[1;32m$upd\e[0m updates available.\n:: Main: $ofc\n:: Aur: $aur\n"
     
     elif [ -n "$(command -v dnf)" ]; then  # Fedora
-        dnf check-update -q | wc -l
+        upd=$(dnf check-update -q | wc -l)
+        printf "[ UPDATES ]\n:: You have \e[1;32m$upd\e[0m updates available\n"
 
     elif [ -n "$(command -v zypper)" ]; then  # openSUSE
-        zypper lu --best-effort | grep -c 'v |'
+        upd=$(zypper lu --best-effort | grep -c 'v  |')
+        printf "[ UPDATES ]\n:: You have \e[1;32m$upd\e[0m updates available\n"
+
+    elif [ -n "$(command -v apt)" ]; then   # debian/ubuntu
+        upd=$(apt list --upgradable 2> /dev/null | grep -c '\[upgradable from')
+        printf "[ UPDATES ]\n:: You have \e[1;32m$upd\e[0m updates available\n"
 
     else
-        printf "Unsupported distribution."
+        printf "\e[1;31m Unsupported package manager for now, please let us know in the github repository...\e[1;0m \n https://github.com/me-js-bro/Bash\n"
         return 1
     fi
 }
@@ -96,75 +54,38 @@ fn_update() {
         sudo dnf update -y && sudo dnf upgrade -y --refresh
     elif [ -n "$(command -v zypper)" ]; then  # openSUSE
         sudo zypper up -y && sudo zypper ref
+    elif [ -n "$(command -v apt)" ]; then  # Debian/Ubuntu
+        sudo apt update -y && sudo apt upgrade -y
     else
-        printf "Unsupported distribution."
+        printf "\e[1;31m Unsupported package manager for now, please let us know in the github repository...\e[1;0m \n https://github.com/me-js-bro/Bash\n"
         return 1
-    fi
-
-    fn_check_updates >> /dev/null
-    upd=$?
-
-    if [[ "$upd" -eq 0 ]]; then
-        update_notify "$icon_dir/install.png" "Done" "Packages are up to date"
-    elif [[ "$upd" -gt 0 ]]; then
-        update_notify "$icon_dir/warning.png" "I tried but" "Some packages may be skipped"
-    else
-        update_notify "$icon_dir/error.png" "Sorry" "could not update packages"
     fi
 }
 
-
 # Install software
 fn_install() {
+
     if [ -n "$(command -v pacman)" ]; then  # Arch Linux
 
         pkg_manager=$(command -v pacman || command -v yay || command -v paru)
         aur=$(command -v yay || command -v paru) # find the aur helper
 
         $aur -S --noconfirm "$@"
-        slepe 1
-
-        if sudo "$pkg_manager" -Qi "$@" &> /dev/null; then
-            install_notify "$@" "was installed successfully.." "$icon_dir/install.png"
-        else
-            removed_notify "$@" "coule not be installed" "$icon_dir/error.png"
-        fi
 
     elif [ -n "$(command -v dnf)" ]; then  # Fedora
 
         sudo dnf install -y "$@"
-        sleep 1
-
-        if sudo dnf list installed "$@" &>> /dev/null; then
-            install_notify "$@" "was installed successfully.." "$icon_dir/install.png"
-        else
-            removed_notify "$@" "coule not be installed" "$icon_dir/error.png"
-        fi
 
     elif [ -n "$(command -v zypper)" ]; then  # openSUSE
 
         sudo zypper in -y "$@"
-        sleep 1
 
-        if sudo zypper se -i "$@" &> /dev/null; then
-            install_notify "$@" "was installed successfully.." "$icon_dir/install.png"
-        else
-            removed_notify "$@" "coule not be installed" "$icon_dir/error.png"
-        fi
+    elif [ -n "$(command -v apt)" ]; then  # Ubuntu or Ubuntu-based
 
-    elif [ -n "$(command -v apt)" ]; then	# ubuntu or ubuntu based
-
-    	sudo apt install "$@" -y
-        sleep 1
-
-        if dpkg -l | grep "$@" &> /dev/null; then
-            install_notify "$@" "was installed successfully.." "$icon_dir/install.png"
-        else
-            removed_notify "$@" "coule not be installed" "$icon_dir/error.png"
-        fi
+        sudo apt install -y "$@"
 
     else
-        printf "Unsupported distribution."
+        printf "\e[1;31m Unsupported package manager for now, please let us know in the GitHub repository...\e[1;0m \n https://github.com/me-js-bro/Zsh\n"
         return 1
     fi
 }
@@ -177,65 +98,38 @@ fn_uninstall() {
         aur=$(command -v yay || command -v paru)
         "$aur" -Rns "$@"
 
-        sleep 1
-        if ! "$pkg_manager" -Qi "$@" &> /dev/null; then
-            removed_notify "$@" "was removed successfully.." "$icon_dir/delete.png"
-        else
-            removed_notify "$@" "coule not be removed" "$icon_dir/error.png"
-        fi
-
     elif [ -n "$(command -v dnf)" ]; then  # Fedora
 
         sudo dnf remove "$@"
-        sleep 1
-        if ! sudo dnf list installed "$@" &> /dev/null; then
-            removed_notify "$@" "was removed successfully.." "$icon_dir/delete.png"
-        else
-            removed_notify "$@" "coule not be removed" "$icon_dir/error.png"
-        fi
 
     elif [ -n "$(command -v zypper)" ]; then  # openSUSE
 
         sudo zypper rm "$@"
-        sleep 1
-        if ! sudo zypper se -i "$@" &> /dev/null; then
-            removed_notify "$@" "was removed successfully.." "$icon_dir/delete.png"
-        else
-            removed_notify "$@" "coule not be removed" "$icon_dir/error.png"
-        fi
 
-    elif [ -n "$(command -v apt)" ]; then	# ubunt or related
+    elif [ -n "$(command -v apt)" ]; then  # ubunt or related
 
         sudo apt remove "$@"
-        sleep 1
-    	if ! dpkg -l | grep "$@" &> /dev/null; then
-            removed_notify "$@" "was removed successfully.." "$icon_dir/delete.png"
-        else
-            removed_notify "$@" "coule not be removed" "$icon_dir/error.png"
-        fi
 
     else
-        printf "Unsupported distribution."
+        printf "\e[1;31m Unsupported package manager for now, please let us know in the github repository...\e[1;0m \n https://github.com/me-js-bro/Zsh\n"
         return 1
     fi
-
 }
 
-# Open Scripts
-fn_open_scripts () {
-    option1="1. Hyprland"
-    option2="2. i3"
-    options="$option1\n$option2"
+# compile cpp file with gcc
+fn_compile_cpp() {
+    filename="$1"
+    if [ -n "$(command -v g++)" ]; then
+        printf "\e[0;36m[ * ] - Compiling...!\e[0m\n\n"
 
-    printf "$options\n\n"
-    read -p "Choose WM: " wm
-    
-    case $wm in
-        1) [[ -d "$HOME/.config/hypr/scripts" ]] && code $HOME/.config/hypr/scripts; || { printf "\e[1;31mhypr dir was not found\e[1;0m\n"; }
-            ;;
-        2) [[ -d "$HOME/.config/i3/scripts" ]] && code $HOME/.config/i3/scripts; || { printf "\e[1;31mi3 dir was not found\e[1;0m\n"; }
-            ;;
-        *) printf "Choose from:\n$options"
-            ;;
-    esac
-} 
+        if g++ -std=c++20 "$filename".cpp -o "$filename"; then
+            printf "\e[1;92m[ ✓ ] - Successfully compiled your code...!\e[0m\n"
+            if [[ "$2" == "-o" ]]; then
+                printf "\e[1;92m        Output: \e[0m\n\n" 
+                ./$filename
+            fi
+        else
+            printf "\n\e[1;91m[  ] - Error: Could not compile your code...!\e[0m\n"
+        fi
+    fi
+}
