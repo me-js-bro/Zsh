@@ -27,6 +27,8 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 
 eval "$(fzf --zsh)" # fzf
 eval "$(thefuck --alias)" # thefu*k
+eval "$(thefuck --alias hell)" # thefu*k
+eval "$(thefuck --alias damn)" # thefu*k
 eval "$(zoxide init zsh)"
 
 show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :1000 {}; fi"
