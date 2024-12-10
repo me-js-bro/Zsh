@@ -36,8 +36,8 @@ common_packages=(
     figlet
     fzf
     git
-    xclip
     zoxide
+    zsh
 )
 
 for_opensuse=(
@@ -101,10 +101,6 @@ elif command -v dnf &> /dev/null; then  # Fedora
 elif command -v brew &> /dev/null; then
     brew install thefuck 2>&1 | tee -a "$log"
 fi
-
-
-printf "${attention} - Installing bash files...\n \n \n" && sleep 0.5
-
 
 # ---- oh-my-zsh installation ---- #
 printf "${attention}\n==> Now installing ${yellow} oh-my-zsh, zsh-autosuggestions, zsh-syntax-highlighting${end}...\n"

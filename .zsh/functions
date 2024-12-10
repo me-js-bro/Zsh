@@ -1,17 +1,4 @@
-# ~/.bash/functions
-
-# remove files and directories
-fn_removal() {
-    local dir_or_file="$1"
-
-    if [ -f "$dir_or_file" ]; then
-        rm "$dir_or_file" -v
-    elif [ -d "$dir_or_file" ]; then
-        rm -rf "$dir_or_file" -v
-    else
-        printf "\e[1;31m'$dir_or_file' does not exist or is neither a regular file nor a directory.\e[0m\n"
-    fi
-}
+# ~/.zsh/functions
 
 # check updates
 fn_check_updates() {
