@@ -1,3 +1,12 @@
+# ~/.zsh/.zshrc
+
+#---------------#
+# ┏┳    ┳┓    
+#  ┃┏   ┣┫┏┓┏┓
+# ┗┛┛•  ┻┛┛ ┗┛     
+#---------------#                                          
+
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -5,10 +14,13 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
+# Set the directory we want to store zinit and plugins
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+############################################
 # Show the runtime
+############################################
 function preexec() {
   timer=${timer:-$SECONDS}
 }
@@ -21,52 +33,160 @@ function precmd() {
   fi
 }
 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="powerlevel10k/powerlevel10k"
 
+############################################
+# Download Zinit, if it's not there yet
+############################################
+if [ ! -d "$ZINIT_HOME" ]; then
+   mkdir -p "$(dirname $ZINIT_HOME)"
+   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+# Source/Load zinit
+source "${ZINIT_HOME}/zinit.zsh"
+
+# Add in Powerlevel10k
+zinit ice depth=1; zinit light romkatv/powerlevel10k
+
+############################################
+# Add in zsh plugins
+############################################
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-completions
+zinit light zsh-users/zsh-autosuggestions
+zinit light Aloxaf/fzf-tab
+zinit light jeffreytse/zsh-vi-mode
+
+# Add in snippets
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+# zinit snippet OMZP::tmuxinator
+zinit snippet OMZP::docker
+zinit snippet OMZP::command-not-found
+
+# Disable the cursor style feature
+# ZVM_CURSOR_STYLE_ENABLED=false
+ZVM_INSERT_MODE_CURSOR=$ZVM_CURSOR_BLINKING_BEAM
+ZVM_NORMAL_MODE_CURSOR=$ZVM_CURSOR_BLINKING_BLOCK
+ZVM_OPPEND_MODE_CURSOR=$ZVM_CURSOR_BLINKING_UNDERLINE
+
+# Load completions
+autoload -Uz compinit && compinit
+
+zinit cdreplay -q
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.zsh/.p10k.zsh ]] || source ~/.zsh/.p10k.zsh
+
+#######################################################
+# ZSH Basic Options
+#######################################################
+setopt autocd              # change directory just by typing its name
+setopt correct             # auto correct mistakes
+setopt interactivecomments # allow comments in interactive mode
+setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’
+setopt nonomatch           # hide error message if there is no match for the pattern
+setopt notify              # report the status of background jobs immediately
+setopt numericglobsort     # sort filenames numerically when it makes sense
+setopt promptsubst         # enable command substitution in prompt
+
+#######################################################
+# Environment Variables
+#######################################################
+# export EDITOR=nvim
+# export VISUAL=nvim
+export EDITOR=nvim visudo
+export VISUAL=nvim visudo
+export SUDO_EDITOR=nvim
+export FCEDIT=nvim
+export TERMINAL=alacritty
+export BROWSER=com.brave.Browser
+if [[ -x "$(command -v bat)" ]]; then
+	export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+	export PAGER=bat
+fi
+
+if [[ -x "$(command -v fzf)" ]]; then
+	export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
+	  --info=inline-right \
+	  --ansi \
+	  --layout=reverse \
+	  --border=rounded \
+	  --color=border:#27a1b9 \
+	  --color=fg:#c0caf5 \
+	  --color=gutter:#16161e \
+	  --color=header:#ff9e64 \
+	  --color=hl+:#2ac3de \
+	  --color=hl:#2ac3de \
+	  --color=info:#545c7e \
+	  --color=marker:#ff007c \
+	  --color=pointer:#ff007c \
+	  --color=prompt:#2ac3de \
+	  --color=query:#c0caf5:regular \
+	  --color=scrollbar:#27a1b9 \
+	  --color=separator:#ff9e64 \
+	  --color=spinner:#ff007c \
+	"
+fi
+
+#######################################################
+# ZSH Keybindings
+#######################################################
+
+bindkey -v
+# bindkey '^p' history-search-backward
+# bindkey '^n' history-search-forward
+# bindkey '^[w' kill-region
+# bindkey ' ' magic-space                           # do history expansion on space
+bindkey "^[[A" history-beginning-search-backward  # search history with up key
+bindkey "^[[B" history-beginning-search-forward   # search history with down key
+
+
+#######################################################
+# History Configuration
+#######################################################
+
+HISTSIZE=10000
+HISTFILE=~/.zsh/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+#######################################################
+# Completion styling
+#######################################################
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+zstyle ':completion:*:*:docker:*' option-stacking yes
+zstyle ':completion:*:*:docker-*:*' option-stacking yes
+
+
+#######################################################
+# ZSH Syntax highlighting
+#######################################################
+source ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
+
+#######################################################
+# eval functions
+#######################################################
 eval "$(fzf --zsh)" # fzf
 eval "$(thefuck --alias)" # thefu*k
 eval "$(thefuck --alias hell)" # thefu*k
 eval "$(thefuck --alias damn)" # thefu*k
 eval "$(zoxide init zsh)"
 
-show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :1000 {}; fi"
-
-export FZF_CTRL_T_OPTS="--preview '$show_file_or_dir_preview'"
-export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
-
-# Advanced customization of fzf options via _fzf_comprun function
-# - The first argument to the function is the name of the command.
-# - You should make sure to pass the rest of the arguments to fzf.
-_fzf_comprun() {
-  local command=$1
-  shift
-
-  case "$command" in
-    cd)           fzf --preview 'eza --tree --color=always {} | head -200' "$@" ;;
-    export|unset) fzf --preview "eval 'echo \${}'"         "$@" ;;
-    ssh)          fzf --preview 'dig {}'                   "$@" ;;
-    *)            fzf --preview "$show_file_or_dir_preview" "$@" ;;
-  esac
-}
-
-# case sensetivity
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-zstyle ':omz:update' mode reminder	# just remind me to update when it's time
-
-plugins=(
-    git
-    zsh-autosuggestions
-    jsontools
-    web-search
-    zsh-syntax-highlighting
-    )
-
-source $ZSH/oh-my-zsh.sh
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-source ~/.zsh/alias
-source ~/.zsh/functions
+#######################################################
+# source alias and functions
+#######################################################
+source ~/.zsh/alias.sh
+source ~/.zsh/functions.sh
