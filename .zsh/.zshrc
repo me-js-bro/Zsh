@@ -1,15 +1,6 @@
-# ~/.zsh/.zshrc
+fastfetch
 
-#---------------#
-# ┏┳    ┳┓    
-#  ┃┏   ┣┫┏┓┏┓
-# ┗┛┛•  ┻┛┛ ┗┛     
-#---------------#                                          
-
-
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# p10k cache config
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
@@ -17,6 +8,7 @@ fi
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
 
 ############################################
 # Show the runtime
@@ -28,7 +20,7 @@ function preexec() {
 function precmd() {
   if [ $timer ]; then
     timer_show=$(($SECONDS - $timer))
-    export RPROMPT="%F{cyan}${timer_show}s %{$reset_color%}"
+    export RPROMPT="%${timer_show}s %{$reset_color%}"
     unset timer
   fi
 }
@@ -47,6 +39,7 @@ source "${ZINIT_HOME}/zinit.zsh"
 
 # Add in Powerlevel10k
 zinit ice depth=1; zinit light romkatv/powerlevel10k
+
 
 ############################################
 # Add in zsh plugins
@@ -78,6 +71,10 @@ zinit cdreplay -q
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.zsh/.p10k.zsh ]] || source ~/.zsh/.p10k.zsh
 
+# starship prompt if you want to use starship
+# eval "$(starship init zsh)"
+
+
 #######################################################
 # ZSH Basic Options
 #######################################################
@@ -90,6 +87,7 @@ setopt notify              # report the status of background jobs immediately
 setopt numericglobsort     # sort filenames numerically when it makes sense
 setopt promptsubst         # enable command substitution in prompt
 
+
 #######################################################
 # Environment Variables
 #######################################################
@@ -99,8 +97,8 @@ export EDITOR=nvim visudo
 export VISUAL=nvim visudo
 export SUDO_EDITOR=nvim
 export FCEDIT=nvim
-export TERMINAL=alacritty
 export BROWSER=com.brave.Browser
+
 if [[ -x "$(command -v bat)" ]]; then
 	export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 	export PAGER=bat
@@ -129,10 +127,10 @@ if [[ -x "$(command -v fzf)" ]]; then
 	"
 fi
 
+
 #######################################################
 # ZSH Keybindings
 #######################################################
-
 bindkey -v
 # bindkey '^p' history-search-backward
 # bindkey '^n' history-search-forward
@@ -145,7 +143,6 @@ bindkey "^[[B" history-beginning-search-forward   # search history with down key
 #######################################################
 # History Configuration
 #######################################################
-
 HISTSIZE=10000
 HISTFILE=~/.zsh/.zsh_history
 SAVEHIST=$HISTSIZE
@@ -158,10 +155,10 @@ setopt hist_save_no_dups
 setopt hist_ignore_dups
 setopt hist_find_no_dups
 
+
 #######################################################
 # Completion styling
 #######################################################
-
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*' menu no
@@ -174,7 +171,9 @@ zstyle ':completion:*:*:docker-*:*' option-stacking yes
 #######################################################
 # ZSH Syntax highlighting
 #######################################################
+# source ~/.zsh/zsh-syntax-highlighting.zsh
 source ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
+
 
 #######################################################
 # eval functions
@@ -185,8 +184,9 @@ eval "$(thefuck --alias hell)" # thefu*k
 eval "$(thefuck --alias damn)" # thefu*k
 eval "$(zoxide init zsh)"
 
+
 #######################################################
 # source alias and functions
 #######################################################
-source ~/.zsh/alias.sh
-source ~/.zsh/functions.sh
+source ~/.zsh/alias.zsh
+source ~/.zsh/functions.zsh
