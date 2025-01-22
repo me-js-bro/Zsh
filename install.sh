@@ -15,12 +15,32 @@ megenta="\e[1;1;35m"
 cyan="\e[1;36m"
 end="\e[1;0m"
 
-# initial texts
-attention="${yellow}[ ATTENTION ]${end}"
-action="${green}[ ACTION ]${end}"
-note="${megenta}[ NOTE ]${end}"
-done="${cyan}[ DONE ]${end}"
-error="${red}[ ERROR ]${end}"
+# prompt function
+msg() {
+    local actn=$1
+    local msg=$2
+
+    case "$actn" in
+        act)
+            echo -e "${green}=>${end} $msg"
+            ;;
+        att)
+            echo -e "${yellow}!!${end} $msg"
+            ;;
+        ask)
+            echo -e "${orange}??${end} $msg"
+            ;;
+        dn)
+            echo -e "${cyan}::${end} $msg\n"
+            ;;
+        skp)
+            echo -e "${magenta}[ SKIP ]${end} $msg"
+            ;;
+        err)
+            echo -e "${red}>< Ohh no! an error...${end}\n   $msg\n"
+            ;;
+    esac
+}
 
 # log file
 dir=`pwd`
@@ -53,16 +73,45 @@ fn_install() {
     local pkg=$1
 
     if [ -n "$(command -v pacman)" ]; then  # Arch Linux
-        sudo pacman -S --noconfirm "$pkg" 2>&1 | tee -a "$log"
+        if sudo pacman -Q "$pkg" &> /dev/null; then
+            msg skp "Skipping $pkg, it was already installed..."
+        else
+            msg act "Installing $pkg..."
+            sudo pacman -S --noconfirm "$pkg" 2>&1 | tee -a "$log" &> /dev/null
+            if sudo pacman -Q "$pkg" &> /dev/null; then
+                msg dn "$pkg was installed successfully!"
+            else
+                msg err "Could not install $pkg"
+            fi
+        fi
     elif [ -n "$(command -v dnf)" ]; then  # Fedora
-        sudo dnf install -y "$pkg" 2>&1 | tee -a "$log"
+        if rpm -q "$pkg" &> /dev/null; then
+            msg skp "Skipping $pkg, it was already installed..."
+        else
+            msg act "Installing $pkg..."
+            sudo dnf install -y "$pkg" 2>&1 | tee -a "$log"
+            if rpm -q "$pkg" &> /dev/null; then
+                msg dn "$pkg was installed successfully!"
+            else
+                msg err "Could not install $pkg"
+            fi
+        fi
     elif [ -n "$(command -v zypper)" ]; then # opensuse
-        sudo zypper in -y "$pkg" 2>&1 | tee -a "$log"
+        if sudo zypper se -i "$pkg" &> /dev/null; then
+            msg skp "Skipping $pkg, it was already installed..."
+        else
+            msg act "Installing $pkg..."
+            sudo zypper in -y "$pkg" 2>&1 | tee -a "$log"
+            if sudo zypper se -i "$pkg" &> /dev/null; then
+                msg dn "$pkg was installed successfully!"
+            else
+                msg err "Could not install $pkg"
+            fi
+        fi
     elif [ -n "$(command -v apt)" ]; then	# debian
         sudo apt install -y "$pkg" 2>&1 | tee -a "$log"
     else
-
-        if [[ "$(uname)" == "Darwin" ]]; then
+         if [[ "$(uname)" == "Darwin" ]]; then
             echo "Running on macOS..."
             if [ -n "$(command -v brew)" ]; then
                 brew install "$pkg" 2>&1 | tee -a "$log"

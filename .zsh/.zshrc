@@ -6,38 +6,36 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 
-# Set the directory we want to store zinit and plugins
-ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
-
-
 ############################################
-# Show the runtime
+# Show the runtime (omz)
 ############################################
-function preexec() {
-  timer=${timer:-$SECONDS}
-}
-
-function precmd() {
-  if [ $timer ]; then
-    timer_show=$(($SECONDS - $timer))
-    export RPROMPT="%${timer_show}s %{$reset_color%}"
-    unset timer
-  fi
-}
+# function preexec() {
+#   timer=${timer:-$SECONDS}
+# }
+#
+# function precmd() {
+#   if [ $timer ]; then
+#     timer_show=$(($SECONDS - $timer))
+#     export RPROMPT="%${timer_show}s %{$reset_color%}"
+#     unset timer
+#   fi
+# }
 
 
 ############################################
 # Download Zinit, if it's not there yet
 ############################################
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 if [ ! -d "$ZINIT_HOME" ]; then
    mkdir -p "$(dirname $ZINIT_HOME)"
    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
-
-# Source/Load zinit
 source "${ZINIT_HOME}/zinit.zsh"
 
+
+############################################
 # Add in Powerlevel10k
+############################################
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 
 
@@ -54,7 +52,7 @@ zinit light jeffreytse/zsh-vi-mode
 zinit snippet OMZP::git
 zinit snippet OMZP::sudo
 # zinit snippet OMZP::tmuxinator
-zinit snippet OMZP::docker
+# zinit snippet OMZP::docker
 zinit snippet OMZP::command-not-found
 
 # Disable the cursor style feature
@@ -72,7 +70,6 @@ zinit cdreplay -q
 [[ ! -f ~/.zsh/.p10k.zsh ]] || source ~/.zsh/.p10k.zsh
 
 # starship prompt if you want to use starship
-# eval "$(starship init zsh)"
 
 
 #######################################################
