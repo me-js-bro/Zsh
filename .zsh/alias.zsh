@@ -28,14 +28,10 @@ alias clar='clear'
 alias c='clear'
 alias q='exit'
 
-alias rmv='fn_removal' #remove both file & direvtory ( one file / directory at a time )
-alias srm='sudo rm -rf' # remove in a sude command
-alias cpy='fn_copy_paste'
-
 # disk spaces and RAM usage
 alias du='du -sh'
-alias mem='fn_resources __memory'
-alias disk='fn_resources __disk'
+alias mem='rsc __memory'
+alias disk='rsc __disk'
 
 #fzf
 alias find='nvim $(fzf --preview="bat --color=always {}")'
@@ -46,18 +42,9 @@ alias nvm='nvim .'
 alias snv='sudo -E nvim -d'
 
 # check updates
-alias cu='fn_check_updates'
 
 # updates
 alias dup='sudo zypper dup -y' # distro update for opensuse
-alias update='fn_update'
-
-# install and remove package
-alias install='fn_install'
-alias remove='fn_uninstall'
-
-# compiling c++ file using gcc
-alias cpp='fn_compile_cpp'
 
 # git alias
 alias add='git add .'

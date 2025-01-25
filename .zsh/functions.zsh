@@ -1,23 +1,35 @@
 # ~/.zsh/functions.sh
 #
 # copy and paste Function
-fn_copy_paste() {
-    local destination="${!#}"  # Last parameter as the destination
-    local items=("${@:1:$(($#-1))}")  # All parameters except the last one (items to copy)
+function cpy() {
+  # Get the last argument as the destination
+  local destination="${@[-1]}/"
 
-    for item in "${items[@]}"; do
-        if [[ -f "$item" ]]; then
-            printf ":: Copying a file\n"
-            cp "$item" "$destination"
-        elif [[ -d "$item" ]]; then
-            printf ":: Copying a directory\n"
-            cp -r "$item" "$destination"
-        fi
-    done
+  # Check if the destination exists and is a directory
+  if [[ ! -d "$destination" ]]; then
+    # If not, create it
+    mkdir -p "$destination"
+  fi
+
+  # Get all arguments except the last one (items to copy)
+  local items=("${@:1:$#-1}")
+
+  # Iterate through the items and copy them
+  for item in "${items[@]}"; do
+    if [[ -f "$item" ]]; then
+      printf ":: Copying a file: %s\n" "$item"
+      cp "$item" "$destination"
+    elif [[ -d "$item" ]]; then
+      printf ":: Copying a directory: %s\n" "$item"
+      cp -r "$item" "$destination"
+    else
+      printf ":: Skipping: %s (not found or invalid)\n" "$item"
+    fi
+  done
 }
 
 # remove files and directories
-fn_removal() {
+function rmv() {
     for item in "$@"; do
         if [[ -f "$item" ]]; then
             printf ":: Removing a file\n"
@@ -32,7 +44,7 @@ fn_removal() {
 }
 
 # disk spaces
-fn_resources(){
+function rsc(){
     case $1 in
         __disk)
             disk_total=$(df / -h | awk 'NR==2 {print $2}')
@@ -50,7 +62,7 @@ fn_resources(){
 }
 
 # check updates
-fn_check_updates() {
+function cu() {
     if [ -n "$(command -v pacman)" ]; then  # Arch Linux
         # Check for updates
         aurhlpr=$(command -v yay || command -v paru)
@@ -81,7 +93,7 @@ fn_check_updates() {
 }
 
 # package updates
-fn_update() {
+function update() {
     update_success=0
     network_error=0
 
@@ -102,7 +114,7 @@ fn_update() {
 }
 
 # Install software
-fn_install() {
+function install() {
 
     if [ -n "$(command -v pacman)" ]; then  # Arch Linux
 
@@ -130,7 +142,7 @@ fn_install() {
 }
 
 # package install
-fn_uninstall() {
+function remove() {
     if [ -n "$(command -v pacman)" ]; then  # Arch Linux
     
         pkg_manager=$(command -v pacman || command -v yay || command -v paru)
@@ -156,7 +168,7 @@ fn_uninstall() {
 }
 
 # compile cpp file with gcc
-fn_compile_cpp() {
+function cpp() {
     filename="$1"
     if [ -n "$(command -v g++)" ]; then
         printf "\e[0;36m[ * ] - Compiling...!\e[0m\n\n"
@@ -173,41 +185,6 @@ fn_compile_cpp() {
     fi
 }
 
-# Start a program but immediately disown it and detach it from the terminal
-function runfree() {
-	"$@" > /dev/null 2>&1 & disown
-}
-
-# Copy file with a progress bar
-function cppy() {
-	if [[ -x "$(command -v rsync)" ]]; then
-		# rsync -avh --progress "${1}" "${2}"
-		rsync -ah --info=progress2 "${1}" "${2}"
-	else
-		set -e
-		strace -q -ewrite cp -- "${1}" "${2}" 2>&1 \
-		| awk '{
-		count += $NF
-		if (count % 10 == 0) {
-			percent = count / total_size * 100
-			printf "%3d%% [", percent
-			for (i=0;i<=percent;i++)
-				printf "="
-				printf ">"
-				for (i=percent;i<100;i++)
-					printf " "
-					printf "]\r"
-				}
-			}
-		END { print "" }' total_size=$(stat -c '%s' "${1}") count=0
-	fi
-}
-
-# Create and go to the directory
-function md() {
-	mkdir -p "$@" && cd "$@"
-}
-
 # Prints random height bars across the width of the screen
 # (great with lolcat application on new terminal windows)
 function random_bars() {
@@ -218,6 +195,81 @@ function random_bars() {
 		echo -n "${chars[RANDOM%${#chars} + 1]}"
 	done
 	echo
+}
+
+# Function for easy Git push
+function gpush() {
+
+    # Push function
+    __push() {
+        local current="$1"
+        local commit="$2"
+        if [[ "$current" == "main" ]]; then
+            git add . && \
+            git commit -m "$commit" && \
+            git push
+        else
+            git add . && \
+            git commit -m "$commit" && \
+            git push origin "$current"
+        fi
+    }
+
+    # Check if current directory is a Git repository
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        # Get the current branch name
+        branch_name=$(git branch --show-current 2>/dev/null)
+
+        # Count untracked files
+        untracked_count=$(git status --porcelain | grep '^??' | wc -l)
+
+        # Count unstaged changes (modified but not staged)
+        unstaged_count=$(git diff --name-only | wc -l)
+
+        # Count staged changes (staged but not committed)
+        staged_count=$(git diff --cached --name-only | wc -l)
+
+        # Display information
+        if [[ -n "$branch_name" ]]; then
+            if [[ "$untracked_count" -gt 0 ]]; then
+                printf "=> %s untracked files\n" "$untracked_count"
+            fi
+
+            if [[ "$unstaged_count" -gt 0 ]]; then
+                printf "=> %s uncommitted changes\n" "$unstaged_count"
+            fi
+
+            if [[ "$staged_count" -gt 0 ]]; then
+                printf "=> %s staged changes\n" "$staged_count"
+            fi
+
+            if [[ "$untracked_count" -eq 0 && "$unstaged_count" -eq 0 && "$staged_count" -eq 0 ]]; then
+                printf "✓ Nothing to commit.\n"
+            else
+                printf "=> Current branch: %s\n" "$branch_name"
+                printf "\nWrite the commit message:\n"
+                read -r "=> " msg
+                echo
+
+                if command -v gum &> /dev/null; then
+                    gum spin --spinner dot --title "Pushing to branch: $branch_name..." -- \
+                        __push "$branch_name" "$msg"
+                else
+                    printf "Pushing to %s...\n" "$branch_name"
+                    __push "$branch_name" "$msg"
+                fi
+
+                # Check the result of the last command
+                if [[ $? -eq 0 ]]; then
+                    printf ":: Pushed successfully!\n"
+                else
+                    printf "!! Sorry, push failed. Please check for errors.\n"
+                fi
+            fi
+        fi
+    else
+        printf "!! Not inside a Git repository.\n"
+    fi
 }
 
 # y shell wrapper that provides the ability to change the current working directory when exiting Yazi.
