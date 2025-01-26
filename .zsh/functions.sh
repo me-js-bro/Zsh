@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# fn for easy git push
+# fn to push git commits easily
 gpush() {
 
     # Push function
@@ -8,13 +6,13 @@ gpush() {
         local current="$1"
         local commit="$2"
         if [[ "$current" == "main" ]]; then
-            git add . >/dev/null 2>&1 && \
-            git commit -m "$commit" >/dev/null 2>&1 && \
-            git push >/dev/null 2>&1
+            git add .
+            git commit -m "$commit"
+            git push
         else
-            git add . >/dev/null 2>&1 && \
-            git commit -m "$commit" >/dev/null 2>&1 && \
-            git push origin "$current" >/dev/null 2>&1
+            git add .
+            git commit -m "$commit"
+            git push origin "$current"
         fi
     }
 
@@ -51,12 +49,12 @@ gpush() {
             else
                 printf "=> %s branch\n" "$branch_name"
                 printf "\nWrite the commit message\n=> "
-                read -r " " msg
+                read -r msg
                 sleep 0.5 && echo
 
                 if command -v gum &> /dev/null; then
-                    gum spin --spinner dot --title "Pushing to branch: $branch_name..." -- \
-                        sleep 2
+                    gum spin --spinner dot \
+                        --title "Pushing to branch: $branch_name" -- \
                         __push "$branch_name" "$msg"
                 else
                     printf "Pushing to %s...\n" "$branch_name"
