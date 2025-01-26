@@ -56,10 +56,10 @@ gpush() {
                     gum spin --spinner dot \
                         --title "Pushing to branch: $branch_name" -- \
                         sleep 2
-                    __push "$branch_name" "$msg"
+                    __push "$branch_name" "$msg" &> /dev/null
                 else
                     printf "Pushing to branch: %s\n" "$branch_name"
-                    __push "$branch_name" "$msg"
+                    __push "$branch_name" "$msg" &> /dev/null
                 fi
 
                 sleep 1
