@@ -55,16 +55,17 @@ gpush() {
                 if command -v gum &> /dev/null; then
                     gum spin --spinner dot \
                         --title "Pushing to branch: $branch_name" -- \
-                        __push "$branch_name" "$msg"
+                        sleep 2
+                    __push "$branch_name" "$msg"
                 else
-                    printf "Pushing to %s...\n" "$branch_name"
+                    printf "Pushing to branch: %s\n" "$branch_name"
                     __push "$branch_name" "$msg"
                 fi
 
                 sleep 1
 
                 # Check the result of the last command
-                if [[ $? -eq 0 ]]; then
+                if [[ "$untracked_count" -eq 0 && "$unstaged_count" -eq 0 && "$staged_count" -eq 0 ]]; then
                     printf ":: Pushed successfully!\n"
                 else
                     printf "!! Sorry, push failed. Please check for errors.\n"
