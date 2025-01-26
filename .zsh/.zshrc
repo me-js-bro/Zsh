@@ -1,3 +1,5 @@
+# ~/.zsh/.zshrc
+
 #---------------#
 # ┏┳    ┳┓    
 #  ┃┏   ┣┫┏┓┏┓
@@ -9,22 +11,6 @@ fastfetch
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
-
-
-############################################
-# Show the runtime (omz)
-############################################
-# function preexec() {
-#   timer=${timer:-$SECONDS}
-# }
-#
-# function precmd() {
-#   if [ $timer ]; then
-#     timer_show=$(($SECONDS - $timer))
-#     export RPROMPT="%${timer_show}s %{$reset_color%}"
-#     unset timer
-#   fi
-# }
 
 
 ############################################
@@ -73,8 +59,6 @@ zinit cdreplay -q
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.zsh/.p10k.zsh ]] || source ~/.zsh/.p10k.zsh
-
-# starship prompt if you want to use starship
 
 
 #######################################################
@@ -174,7 +158,7 @@ zstyle ':completion:*:*:docker-*:*' option-stacking yes
 # ZSH Syntax highlighting
 #######################################################
 # source ~/.zsh/zsh-syntax-highlighting.zsh
-source ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
+# source ~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh
 
 
 #######################################################
@@ -192,3 +176,4 @@ eval "$(zoxide init zsh)"
 #######################################################
 source ~/.zsh/alias.zsh
 source ~/.zsh/functions.zsh
+source ~/.zsh/functions.sh

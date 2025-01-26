@@ -145,9 +145,9 @@ if command -v zypper &> /dev/null; then
     fi
 
 elif command -v pacman &> /dev/null; then  # Arch Linux
-    sudo pacman -S --noconfirm thefuck 2>&1 | tee -a "$log"
+    fn_install thefuck 2>&1 | tee -a "$log"
 elif command -v dnf &> /dev/null; then  # Fedora
-    sudo dnf install -y thefuck 2>&1 | tee -a "$log"
+    fn_install thefuck 2>&1 | tee -a "$log"
 elif command -v brew &> /dev/null; then
     brew install thefuck 2>&1 | tee -a "$log"
 fi

@@ -3,18 +3,33 @@
 ## Features
 
 - Custom functions and alias
+- Lightweight package manager `zinit`
 - Better `ls` with `eza`
 - Better `cd` with `zoxide`
 - Better `cat` with `bat`
 - Fuzzy finding with `fzf` and preview with `bat`
+- Auto correct commands.
 - Command mistake correction with `thefu*k`
-- Minimal powerlevel10k theme
+- Minimal `powerlevel10k` theme
 - Syntax highlighting
 - Auto suggestions
+- Autocd
+
+### Note
+
+By default, all the config files will be storred into a `.zsh` directory in your `$HOME` directory.
+
+### Customization
+
+If you want to customize it after the installation, just navigate to `~/.zsh` directory and open it with your prferred text editor. Now you will be able to make changes to your `.zshrc`, `.p10k.zsh` and other files.
+
+### Supported Distros for the install script
+
+The installation script is be able to install necessary packages with `pacman`, `dnf`, `zypper`, `apt` package managers. I'm not sure if it will work with `brew` in `MacOs`, yet I have added scripts for it.
 
 ## Installation
 
-just run the commands below. and it will automaticly install `zsh`, `zsh-syntaxhighlightine`, `zsh-autosuggestions`, `powerlevel10k` and other necessary packages. Also you will get some custom funstions and alias. But for now, it only supports <i>only <strong>4</strong> package managers</i>. Soon I will add more. And also for <strong>brew</strong> in MacOs.<br>
+Run these commands below and it will install ans setup this config.
 
 ```
 git clone --depth=1 https://github.com/me-js-bro/Zsh.git && cd Zsh
@@ -23,8 +38,6 @@ chmod +x install.sh
 ```
 
 ## Command Shortcuts
-
-### 1) Directory Navigation and File Management
 
 | Shortcut  | Command                                                                               | Description                                                                                              |
 | --------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -41,3 +54,4 @@ chmod +x install.sh
 | `pusho`   | `git push origin [branch]`                                                            | Push to a specified branch.                                                                              |
 | `pull`    | `git pull origin [branch]`                                                            | Pull from a specified branch.                                                                            |
 | `info`    | `git info`                                                                            | Git Information.                                                                                         |
+| `gpush`   | `binding of some commands`                                                            | Binding of `git add .`, `git commit -m "commit msg"`, `git push`                                         |
