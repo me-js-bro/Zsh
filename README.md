@@ -1,4 +1,4 @@
-<h1 align="center">Custom zsh by Js Bro</h1>
+<h1 align="center">Custom zsh by Shell Ninja</h1>
 
 ## Features
 
@@ -32,7 +32,7 @@ The installation script is be able to install necessary packages with `pacman`, 
 Run these commands below and it will install ans setup this config.
 
 ```
-git clone --depth=1 https://github.com/me-js-bro/Zsh.git && cd Zsh
+git clone --depth=1 https://github.com/shell-ninja/Zsh.git && cd Zsh
 chmod +x install.sh
 ./install.sh
 ```
